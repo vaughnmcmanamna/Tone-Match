@@ -1,6 +1,5 @@
 import { useState, useRef } from "react";
-
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+import DEMO_DATA from "./demoData.js";
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
@@ -65,124 +64,53 @@ const styles = `
     margin-bottom: 20px;
   }
 
-  .input-group { margin-bottom: 24px; }
+  .song-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
 
-  .input-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: #888;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-    display: block;
-  }
-
-  .text-input {
+  .song-btn {
     width: 100%;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
     color: #e8e2d9;
     font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 14px;
-    padding: 12px 16px;
-    outline: none;
-    transition: border-color 0.2s;
-    height: 44px;
-  }
-
-  .text-input:focus { border-color: rgba(201,74,30,0.5); }
-  .text-input::placeholder { color: #444; }
-
-  .upload-zone {
-    width: 100%;
-    border: 1px dashed rgba(255,255,255,0.15);
-    padding: 20px;
-    text-align: center;
+    font-size: 13px;
+    padding: 14px 16px;
     cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    background: rgba(255,255,255,0.02);
+    text-align: left;
+    transition: all 0.15s;
   }
 
-  .upload-zone:hover, .upload-zone.drag { border-color: rgba(201,74,30,0.5); background: rgba(201,74,30,0.04); }
-  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .song-btn:hover { background: rgba(201,74,30,0.08); border-color: rgba(201,74,30,0.3); }
 
-  .upload-icon { font-size: 20px; margin-bottom: 6px; opacity: 0.4; }
+  .song-btn.active {
+    background: rgba(201,74,30,0.12);
+    border-color: #c94a1e;
+    color: #e8e2d9;
+  }
 
-  .upload-text {
+  .song-btn-title {
+    display: block;
+    font-weight: 500;
+  }
+
+  .song-btn-sub {
+    display: block;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 10px;
-    color: #666;
-    letter-spacing: 1px;
-  }
-
-  .upload-filename {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: #c94a1e;
-    margin-top: 6px;
-  }
-
-  .divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 20px 0;
-  }
-
-  .divider-line { flex: 1; height: 1px; background: rgba(255,255,255,0.08); }
-
-  .divider-text {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: #444;
-    letter-spacing: 2px;
-  }
-
-  .submit-btn {
-    width: 100%;
-    background: #c94a1e;
-    border: none;
-    color: #fff;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    letter-spacing: 3px;
-    padding: 16px;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 8px;
-  }
-
-  .submit-btn:hover:not(:disabled) { background: #e05520; }
-  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 300px;
-    gap: 20px;
-  }
-
-  .loading-bar { width: 200px; height: 2px; background: rgba(255,255,255,0.08); overflow: hidden; }
-
-  .loading-bar-inner {
-    height: 100%;
-    background: #c94a1e;
-    animation: loadSlide 1.4s ease-in-out infinite;
-    width: 40%;
-  }
-
-  @keyframes loadSlide {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(400%); }
-  }
-
-  .loading-text {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
     color: #555;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
+    margin-top: 3px;
+  }
+
+  .song-btn.active .song-btn-sub { color: #c94a1e; }
+
+  .demo-note {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: #3a3a3a;
+    letter-spacing: 1px;
+    line-height: 1.7;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    padding-top: 20px;
   }
 
   .empty-state { padding-top: 40px; }
@@ -286,13 +214,6 @@ const styles = `
 
   .track-progress { height: 100%; background: #c94a1e; transition: width 0.1s linear; }
 
-  .preview-loading {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: #555;
-    letter-spacing: 1px;
-  }
-
   .md-content h1 {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 22px;
@@ -346,16 +267,15 @@ const styles = `
     color: #e8a070;
     padding: 2px 6px;
   }
-
-  .error-box {
-    background: rgba(201,74,30,0.1);
-    border: 1px solid rgba(201,74,30,0.3);
-    padding: 16px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    color: #e8a070;
-  }
 `;
+
+const GENRE_LABELS = {
+  "Crowbar - Planets Collide": "Sludge Metal",
+  "Mac DeMarco - Salad Days": "Jangly Indie",
+  "Funkadelic - Maggot Brain": "Psychedelic Funk",
+  "My Bloody Valentine - Only Shallow": "Shoegaze",
+  "Sonic Youth - Teenage Riot": "Noise Rock",
+};
 
 function formatInline(text) {
   const parts = [];
@@ -404,7 +324,7 @@ function renderMarkdown(text) {
   return elements;
 }
 
-function AudioPreview({ dryB64, wetB64, loading }) {
+function AudioPreview({ dryB64, wetB64 }) {
   const [dryProgress, setDryProgress] = useState(0);
   const [wetProgress, setWetProgress] = useState(0);
   const [playingDry, setPlayingDry] = useState(false);
@@ -443,18 +363,9 @@ function AudioPreview({ dryB64, wetB64, loading }) {
     else { ref.current.pause(); setPlaying(false); }
   };
 
-  if (loading) return (
-    <div className="preview-section">
-      <div className="preview-label">// Tone Preview</div>
-      <div className="preview-loading">Generating audio previews...</div>
-    </div>
-  );
-
-  if (!dryB64) return null;
-
   return (
     <div className="preview-section">
-      <div className="preview-label">// Tone Preview — Same Riff, Before & After</div>
+      <div className="preview-label">// Tone Preview - Same Riff, Before &amp; After</div>
       <div className="preview-tracks">
         <div className="track">
           <span className="track-label">DRY</span>
@@ -480,66 +391,9 @@ function AudioPreview({ dryB64, wetB64, loading }) {
 }
 
 export default function ToneMatcher() {
-  const [songRef, setSongRef] = useState('');
-  const [yourRiff, setYourRiff] = useState(null);
-  const [refClip, setRefClip] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [previewLoading, setPreviewLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [effects, setEffects] = useState(null);
-  const [dryB64, setDryB64] = useState(null);
-  const [wetB64, setWetB64] = useState(null);
-  const [error, setError] = useState(null);
-  const [dragRef, setDragRef] = useState(false);
-  const [dragRiff, setDragRiff] = useState(false);
+  const [selected, setSelected] = useState(null);
 
-  const canSubmit = (songRef.trim() || refClip) && !loading;
-
-  const handleSubmit = async () => {
-    setLoading(true);
-    setResult(null);
-    setEffects(null);
-    setDryB64(null);
-    setWetB64(null);
-    setError(null);
-
-    try {
-      // Step 1: Analyze
-      const formData = new FormData();
-      if (songRef.trim()) formData.append('song_ref', songRef.trim());
-      if (refClip) formData.append('ref_clip', refClip);
-      if (yourRiff) formData.append('your_riff', yourRiff);
-
-      const res = await fetch(`${API_BASE}/analyze`, { method: 'POST', body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Server error');
-
-      setResult(data.analysis);
-      setEffects(data.effects);
-
-      // Step 2: Generate previews — send ref clip for tuning detection
-      if (data.effects && Object.keys(data.effects).length > 0) {
-        setPreviewLoading(true);
-        const previewForm = new FormData();
-        previewForm.append('effects', JSON.stringify(data.effects));
-        if (refClip) previewForm.append('ref_clip', refClip);
-
-        const previewRes = await fetch(`${API_BASE}/preview`, {
-          method: 'POST',
-          body: previewForm,
-        });
-        const previewData = await previewRes.json();
-        setDryB64(previewData.dry);
-        setWetB64(previewData.wet);
-        setPreviewLoading(false);
-      }
-    } catch (err) {
-      setError(err.message);
-      setPreviewLoading(false);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const demo = selected !== null ? DEMO_DATA[selected] : null;
 
   return (
     <>
@@ -552,73 +406,35 @@ export default function ToneMatcher() {
 
         <div className="main">
           <div className="panel">
-            <div className="section-label">// Reference Tone</div>
+            <div className="section-label">// Select Reference Tone</div>
 
-            <div className="input-group">
-              <label className="input-label">Song / Artist</label>
-              <input
-                className="text-input"
-                value={songRef}
-                onChange={e => setSongRef(e.target.value)}
-                placeholder="e.g. Crowbar — Planets Collide"
-              />
+            <div className="song-list">
+              {DEMO_DATA.map((item, i) => (
+                <button
+                  key={i}
+                  className={`song-btn ${selected === i ? 'active' : ''}`}
+                  onClick={() => setSelected(i)}
+                >
+                  <span className="song-btn-title">{item.song}</span>
+                  <span className="song-btn-sub">{GENRE_LABELS[item.song] ?? ''}</span>
+                </button>
+              ))}
             </div>
 
-            <div className="divider">
-              <div className="divider-line" />
-              <div className="divider-text">AND / OR</div>
-              <div className="divider-line" />
+            <div className="demo-note">
+              DEMO MODE — Pre-generated tones.<br />
+              Each analysis was produced by Claude<br />
+              from the song reference alone.
             </div>
-
-            <div className="input-group">
-              <label className="input-label">Reference Clip</label>
-              <div
-                className={`upload-zone ${dragRef ? 'drag' : ''}`}
-                onDragOver={e => { e.preventDefault(); setDragRef(true); }}
-                onDragLeave={() => setDragRef(false)}
-                onDrop={e => { e.preventDefault(); setDragRef(false); setRefClip(e.dataTransfer.files[0]); }}
-              >
-                <input type="file" accept="audio/*" onChange={e => setRefClip(e.target.files[0])} />
-                <div className="upload-icon">♪</div>
-                <div className="upload-text">DROP REFERENCE AUDIO OR CLICK</div>
-                {refClip && <div className="upload-filename">✓ {refClip.name}</div>}
-              </div>
-            </div>
-
-            <div className="input-group">
-              <label className="input-label">Your Riff (optional — for comparison)</label>
-              <div
-                className={`upload-zone ${dragRiff ? 'drag' : ''}`}
-                onDragOver={e => { e.preventDefault(); setDragRiff(true); }}
-                onDragLeave={() => setDragRiff(false)}
-                onDrop={e => { e.preventDefault(); setDragRiff(false); setYourRiff(e.dataTransfer.files[0]); }}
-              >
-                <input type="file" accept="audio/*" onChange={e => setYourRiff(e.target.files[0])} />
-                <div className="upload-icon">🎸</div>
-                <div className="upload-text">YOUR RIFF — I'LL COMPARE YOUR TONE</div>
-                {yourRiff && <div className="upload-filename">✓ {yourRiff.name}</div>}
-              </div>
-            </div>
-
-            <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit}>
-              {loading ? 'ANALYSING...' : 'MATCH TONE →'}
-            </button>
           </div>
 
           <div className="panel-right">
-            {loading && (
-              <div className="loading">
-                <div className="loading-bar"><div className="loading-bar-inner" /></div>
-                <div className="loading-text">ANALYSING TONE...</div>
-              </div>
-            )}
-
-            {!loading && !result && !error && (
+            {!demo && (
               <div className="empty-state">
                 <div className="empty-state-title">AWAITING INPUT</div>
                 <div className="empty-state-sub">
-                  Enter a song reference or upload a clip<br />
-                  to get your Reaper signal chain.<br /><br />
+                  Select a reference track to see<br />
+                  the full Reaper signal chain.<br /><br />
                   Output includes:<br />
                   — Hardware amp/pedal settings<br />
                   — ReaPlugs VST chain with exact values<br />
@@ -630,19 +446,17 @@ export default function ToneMatcher() {
               </div>
             )}
 
-            {error && <div className="error-box">ERROR: {error}</div>}
-
-            {result && !loading && (
-              <div className="result">
+            {demo && (
+              <div className="result" key={selected}>
                 <div className="result-header">
-                  <div className="result-ref">{songRef || (refClip ? refClip.name : 'Uploaded Clip')}</div>
+                  <div className="result-ref">{demo.song}</div>
                   <div className="result-sub">TONE ANALYSIS · REAPER SIGNAL CHAIN</div>
                 </div>
 
-                <AudioPreview dryB64={dryB64} wetB64={wetB64} loading={previewLoading} />
+                <AudioPreview dryB64={demo.dry} wetB64={demo.wet} />
 
                 <div className="md-content">
-                  {renderMarkdown(result)}
+                  {renderMarkdown(demo.analysis)}
                 </div>
               </div>
             )}
