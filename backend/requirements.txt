@@ -5,5 +5,11 @@ pedalboard
 soundfile
 numpy
 anthropic
-librosa
 scipy
+audioread
+scikit-learn
+joblib
+decorator
+pooch
+lazy_loader
+soxr
