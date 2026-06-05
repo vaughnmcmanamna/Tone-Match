@@ -272,8 +272,8 @@ const styles = `
 const GENRE_LABELS = {
   "Crowbar - Planets Collide": "Sludge Metal",
   "Mac DeMarco - Salad Days": "Jangly Indie",
-  "Funkadelic - Maggot Brain": "Psychedelic Funk",
-  "My Bloody Valentine - Only Shallow": "Shoegaze",
+  "Limp Bizkit - It'll Be OK": "Nu-Metal",
+  "INXS - Original Sin": "New Wave",
   "Sonic Youth - Teenage Riot": "Noise Rock",
 };
 
