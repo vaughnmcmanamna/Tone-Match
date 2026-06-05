@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pedalboard
+soundfile
+numpy
+anthropic
+librosa
+scipy
